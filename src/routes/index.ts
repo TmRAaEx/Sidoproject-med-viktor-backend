@@ -2,6 +2,7 @@
 
 import { Router, Request, Response } from "express";
 import userRoutes from "./users";
+import carRoutes from "./cars";
 
 const baseRoutes = Router();
 
@@ -10,5 +11,6 @@ baseRoutes.get("/", (req: Request, res: Response) => {
 });
 
 baseRoutes.use("/api/users", userRoutes);
+baseRoutes.use("/api/cars", carRoutes);
 
 export default baseRoutes;
