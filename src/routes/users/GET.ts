@@ -1,4 +1,4 @@
-// src/routes/users/get.ts
+// src/routes/users/GET.ts
 import { getUserById } from "@controllers/userController";
 import express, { Request, Response } from "express";
 
