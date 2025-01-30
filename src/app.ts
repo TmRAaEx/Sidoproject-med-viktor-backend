@@ -12,6 +12,7 @@ export const app: Express = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 app.use(
     session({
         secret: process.env.SESSION_SECRET as string, // Secret key for signing cookies
@@ -24,6 +25,7 @@ app.use(
         },
     })
 );
+
 //routes  
 app.use("/", baseRoutes);
 
