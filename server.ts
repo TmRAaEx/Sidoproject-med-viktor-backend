@@ -4,8 +4,14 @@ import { app } from "./src/app";
 import DBconnection from "@config/dbConfig";
 dotenv.config();
 
+
 const port = process.env.PORT || 3000;
 
+declare module "express-session" {
+  interface SessionData {
+    userId: string;
+  }
+}
 //connect to database
 DBconnection();
 
