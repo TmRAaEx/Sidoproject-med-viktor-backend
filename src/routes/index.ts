@@ -12,7 +12,7 @@ baseRoutes.get("/", (req: Request, res: Response) => {
 });
 
 baseRoutes.use("/api/users", userRoutes);
-baseRoutes.use("/authentication", authRoutes);
+baseRoutes.use("/auth", authRoutes);
 baseRoutes.use("/api/cars", carRoutes);
 
 export default baseRoutes;

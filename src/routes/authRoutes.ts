@@ -1,7 +1,9 @@
+//src/routes/authRoutes
+
 import express from "express";
 import { loginUser } from "@controllers/authController";
-import { authenticateCookie } from "@middlewares/authMiddleware";
-import {createUser} from "@controllers/userController";
+import { authenticateJWT } from "@middlewares/authMiddleware";
+import { createUser } from "@controllers/userController";
 
 const router = express.Router();
 
@@ -9,10 +11,13 @@ const router = express.Router();
 router.post("/register", createUser);
 router.post("/login", loginUser);
 
-// Protected route (Authentication required)
-router.get("/profile", authenticateCookie, (req, res) => {
-    // If the user is authenticated, this will be accessible
-    res.json({ message: "Welcome to your profile", userId: req.session.userId });
-});
+// Protected route (Requires JWT authentication)
+router.get("/profile", authenticateJWT, (req, res) => {
+  if (!req.user) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
 
+  res.json({ message: "Welcome to your profile", userId: req.user.id });
+});
 export default router;
