@@ -9,22 +9,22 @@ const carSchema = new mongoose.Schema(
         sku: {type: String, required: true, unique: true},
         name: {type: String, required: true},
         price: {type: Number, required: true},
-        regularPrice: {type: Number, required: true},
-        campaign: {type: Boolean, required: true},
-        monthlyCost: {type: Number, required: true},
-        leasingCost: {type: Number, required: true},
-        vatValue: {type: Number, required: true},
+        regularPrice: {type: Number, default: null},
+        campaign: {type: Boolean, default: null},
+        monthlyCost: {type: Number, default: null},
+        leasingCost: {type: Number, default: null},
+        vatValue: {type: Number, default: null},
         stockStatus: {
             buyable: {type: Boolean, required: true},
             name: {type: String, required: true}
         },
         quantity: {type: Number, required: true},
-        brand: {type: String, required: true},
+        brand: {type: String, default: null},
         image: {type: String, required: true},
         attributes: [{
-            id: {type: Number, required: true},
-            name: {type: String, required: true},
-            value: {type: String, required: true}
+            id: {type: Number, default: null},
+            name: {type: String, default: null},
+            value: {type: String, default: null}
         },]
     }
 )

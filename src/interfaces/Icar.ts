@@ -12,7 +12,7 @@ export interface ICarAttribute {
     value: string;
 }
 
-export interface ICar extends Document {
+export interface ICar {
     id: number;
     sku: string;
     name: string;
