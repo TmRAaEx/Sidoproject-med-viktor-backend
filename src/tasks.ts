@@ -9,3 +9,4 @@ export const startCronJobs = () => {
         await saveCarsToDB();
     })
 }
+
