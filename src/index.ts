@@ -1,6 +1,6 @@
 // server.ts
 import dotenv from "dotenv";
-import { app } from "./src/app";
+import { app } from "./app";
 
 dotenv.config();
 
