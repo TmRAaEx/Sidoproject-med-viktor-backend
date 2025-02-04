@@ -42,3 +42,4 @@ coverage/
 # Debug and temporary files
 *.bak
 *.swp
+.vercel
