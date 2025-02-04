@@ -14,13 +14,18 @@ export const getCars = async (limit: number): Promise<ICar[]> => {
 
 export const saveCarsToDB = async () => {
   const convertedCars = await fetchAndConvertLecabData();
+
   for (const car of convertedCars) {
-    const existingCar = await Car.find({ sku: car.sku, id: car.id });
-    if (existingCar.length > 0) {
-      console.log("Car already exists", existingCar);
-      continue;
+    const existingCar = await Car.findOne({ sku: car.sku, id: car.id });
+
+    if (existingCar) {
+      await Car.updateOne({ sku: car.sku, id: car.id }, { $set: car });
+      console.log(`[Database]: Car updated - SKU: ${car.sku}, ID: ${car.id}`);
+    } else {
+      const newCar = await Car.create(car);
+      console.log(
+        `[Database]: Car created - SKU: ${newCar.sku}, ID: ${newCar.id}`
+      );
     }
-    const newCar = await Car.create(car);
-    console.log("Car created: ", newCar);
   }
 };
