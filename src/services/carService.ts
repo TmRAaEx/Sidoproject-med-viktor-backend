@@ -8,8 +8,14 @@ export const getCarById = async (carId: string): Promise<ICar | null> => {
   return Car.findById(carId);
 };
 
-export const getCars = async (limit: number): Promise<ICar[]> => {
-  return Car.find().limit(limit);
+export const getCars = async (
+  limit: number,
+  sort: Record<string, 1 | -1>,
+  page: number
+): Promise<ICar[]> => {
+  const skip = (page - 1) * limit; // Calculate how many records to skip
+
+  return Car.find().sort(sort).limit(limit).skip(skip); // Implement pagination
 };
 
 export const saveCarsToDB = async () => {
