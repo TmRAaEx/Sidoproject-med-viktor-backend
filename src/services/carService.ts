@@ -19,19 +19,32 @@ export const getCars = async (
 };
 
 export const saveCarsToDB = async () => {
+  // 1️⃣ Fetch cars from Lecab
   const convertedCars = await fetchAndConvertLecabData();
+  const lecabCarSKUs = new Set(convertedCars.map((car) => car.sku)); // Store SKUs in a Set for quick lookup
+
+  // 2️⃣ Fetch all cars currently in the database
+  const existingCars = await Car.find();
 
   for (const car of convertedCars) {
-    const existingCar = await Car.findOne({ sku: car.sku, id: car.id });
+    const existingCar = await Car.findOne({ sku: car.sku });
 
     if (existingCar) {
-      await Car.updateOne({ sku: car.sku, id: car.id }, { $set: car });
-      console.log(`[Database]: Car updated - SKU: ${car.sku}, ID: ${car.id}`);
+      // 3️⃣ Update the car if it exists
+      await Car.updateOne({ sku: car.sku }, { $set: car });
+      console.log(`[Database]: Car updated - SKU: ${car.sku}`);
     } else {
-      const newCar = await Car.create(car);
-      console.log(
-        `[Database]: Car created - SKU: ${newCar.sku}, ID: ${newCar.id}`
-      );
+      // 4️⃣ Insert new car if it doesn't exist
+      await Car.create(car);
+      console.log(`[Database]: Car created - SKU: ${car.sku}`);
+    }
+  }
+
+  // 5️⃣ Identify and delete cars that no longer exist on Lecab
+  for (const dbCar of existingCars) {
+    if (!lecabCarSKUs.has(dbCar.sku)) {
+      await Car.deleteOne({ sku: dbCar.sku });
+      console.log(`[Database]: Car removed - SKU: ${dbCar.sku}`);
     }
   }
 };
