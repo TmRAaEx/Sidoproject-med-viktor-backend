@@ -51,3 +51,24 @@ export const getCarById = async (
       .json({ message: "Server error", error: (error as Error).message });
   }
 };
+
+export const getCarsBySearch = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const searchTerm = (req.query.search as string) || "";
+
+    const cars = await carService.getCarsBySearch(searchTerm);
+
+    if (!cars || cars.length === 0) {
+      res.status(404).json({ message: "No cars found" });
+      return;
+    }
+    res.status(200).json(cars);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Server error", error: (error as Error).message });
+  }
+};

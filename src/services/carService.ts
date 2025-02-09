@@ -18,6 +18,10 @@ export const getCars = async (
   return Car.find().sort(sort).limit(limit).skip(skip); // Implement pagination
 };
 
+export const getCarsBySearch = async (searchTerm: string): Promise<ICar[]> => {
+  return Car.find({ name: { $regex: searchTerm, $options: "i" } });
+};
+
 export const saveCarsToDB = async () => {
   // 1️⃣ Fetch cars from Lecab
   const convertedCars = await fetchAndConvertLecabData();
