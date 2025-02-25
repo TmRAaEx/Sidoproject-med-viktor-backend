@@ -70,16 +70,7 @@ export const fetchAndConvertLecabData = async (): Promise<ICar[]> => {
   }
 };
 const reformatPrice = (price: number) => {
-  const newPrice = price.toString().slice(0, -2);
-  const reformatedPrice = new Intl.NumberFormat("sv-SW", {
-    useGrouping: true,
-    minimumFractionDigits: 0,
-  })
-    .format(+newPrice)
-    .replace(/,/g, " ");
-  console.log(reformatedPrice);
-
-  return reformatedPrice;
+  return price / 100;
 };
 
 const convertData = (data: any[]): ICar[] => {
@@ -89,14 +80,14 @@ const convertData = (data: any[]): ICar[] => {
       sku: car.sku,
       name: car.name,
       price: reformatPrice(car.price),
-      regularPrice: car.regularPrice,
+      regularPrice: reformatPrice(car.regularPrice),
       campaign: car.campaign,
-      monthlyCost: car.monthlyCost,
+      monthlyCost: reformatPrice(car.monthlyCost),
       brand: car.brand.name,
-      leasingCost: car.leasingCost,
+      leasingCost: reformatPrice(car.leasingCost),
       quantity: car.quantity,
       image: car.defaultImage?.image || "default-image-url",
-      vatValue: car.vatValue,
+      vatValue: reformatPrice(car.vatValue),
       stockStatus: {
         buyable: car.stockStatus?.buyable ?? false,
         name: car.stockStatus?.name ?? "Unknown",

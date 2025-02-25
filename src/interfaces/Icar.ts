@@ -15,7 +15,7 @@ export interface ICar {
   id: number;
   sku: string;
   name: string;
-  price: string;
+  price: number;
   regularPrice: number;
   campaign: boolean;
   monthlyCost: number;
