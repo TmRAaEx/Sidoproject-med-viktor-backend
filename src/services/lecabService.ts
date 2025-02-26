@@ -1,4 +1,5 @@
 import { ICar, ICarAttribute } from "@interfaces/Icar";
+import { query } from "express";
 import puppeteer from "puppeteer";
 
 export const fetchAndConvertLecabData = async (): Promise<ICar[]> => {
@@ -85,7 +86,7 @@ const convertData = async (data: any[]): Promise<ICar[]> => {
   // Use Promise.all to handle async operations inside the map
   return await Promise.all(
     data.map(
-      async (car: any): Promise<ICar> => ({
+      async (car: any, index: number): Promise<ICar> => ({
         id: car.id,
         sku: car.sku,
         name: car.name,
@@ -115,6 +116,7 @@ const convertData = async (data: any[]): Promise<ICar[]> => {
     )
   );
 };
+
 async function getEquipment(carUrls: string[]): Promise<any[]> {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -128,37 +130,59 @@ async function getEquipment(carUrls: string[]): Promise<any[]> {
       } `
     );
     await page.goto("https://store.lecab.se/" + carUrl, {
-      waitUntil: "networkidle2",
+      waitUntil: "networkidle2", // Ensure the page is fully loaded
     });
+
+    page.on("console", (msg) => {
+      console.log(`[browser console]: ${msg.text()}`);
+    });
+
+    // Wait for the body to be loaded (to confirm the page is rendered)
+    await page.waitForSelector("body", { visible: true });
 
     // Simulate interaction to open collapsible div
     await page.evaluate(() => {
-      const collapsibleDiv = document.querySelector('div[data-state="closed"]');
-      if (collapsibleDiv) {
-        collapsibleDiv.setAttribute("data-state", "open"); // Open the collapsible div
+      const collapsibleDiv = document.querySelector(
+        'section div div h3 [id^="radix"][data-state="closed"]'
+      ) as HTMLButtonElement;
+      const button = document.querySelector(
+        "section div div h3 button"
+      ) as HTMLButtonElement;
+      if (collapsibleDiv && button) {
+        collapsibleDiv.setAttribute("data-state", "open");
+        button.click();
+        collapsibleDiv.click();
       }
     });
 
-    // Wait for content to be visible
-    await page.waitForSelector("div.pt-0", { visible: true });
+    // Wait for the content inside the collapsible div to be visible
+    // You might need to adjust the selector here to match the exact dynamic content that appears
+    await page.waitForSelector('section div div [id^="radix"] div.pt-0', {
+      visible: true,
+    });
 
     // Extract dynamic data from the collapsible list
     const dynamicData = await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll("ul li"));
+      const container = document.querySelector(
+        'section div div [id^="radix"] div.pt-0'
+      ) as HTMLElement;
+      const items = Array.from(container.querySelectorAll("ul li.flex"));
+
       return items
         .map((item: any) => {
           const icon = item.querySelector("svg") ? true : false;
 
-          // Extract text for 'type' and 'text'
-          const type = item.querySelector("p")
-            ? item.querySelector("p").textContent.trim()
-            : item.textContent.trim();
+          // Extract the text content before the <p> tag (for 'type')
+          let type: string | null = item
+            ? item.innerText.trim().split(" ")[0].split("\n")[0]
+            : null;
+          // Extract text content inside the <p> tag (for 'text')
           const text = item.querySelector("p")
-            ? item.querySelector("p").nextElementSibling?.textContent.trim()
+            ? item.querySelector("p")?.textContent?.trim() // Get the content inside the <p> tag
             : null;
 
-          if (!type || !text) {
-            return undefined; // Skip if no type or text found
+          if (!type && !text) {
+            return;
           }
 
           return { type, text, icon }; // Return structured object with type, text, and icon
@@ -179,20 +203,19 @@ async function getEquipment(carUrls: string[]): Promise<any[]> {
       return !excludedTexts.includes(item.text); // Filter out excluded items
     });
 
-    // Extract static data
+    // Wait for and extract static data
     const staticData = await page.evaluate(() => {
       const listItems = document.querySelectorAll("ul.flex li");
       return Array.from(listItems)
         .map((item: any) => {
-          // Extract text for 'type' and 'text'
           const type = item.querySelector("div")?.textContent.trim();
           const text = item
             .querySelector("div")
             ?.nextElementSibling?.textContent.trim();
           const icon = item.querySelector("svg") ? true : false;
 
-          if (!type || !text) {
-            return undefined; // Skip if no type or text found
+          if (!type && !text) {
+            return; // Skip if no type or text found
           }
 
           return { type, text, icon }; // Return structured object with type, text, and icon
@@ -200,11 +223,14 @@ async function getEquipment(carUrls: string[]): Promise<any[]> {
         .filter((item) => item !== undefined); // Filter out undefined items
     });
 
-    // Now returning an object with 'equipment' and 'highlights'
+    // Push the results to the results array
     equipmentResults.push({
       equipment: filteredDynamicData,
       highlights: staticData,
     });
+
+    // Optionally, wait before moving to the next car URL if necessary
+    // await page.waitForTimeout(2000);  // Uncomment if you want a small delay between requests
   }
 
   await browser.close();

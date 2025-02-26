@@ -11,7 +11,7 @@ export interface ICarAttribute {
   value: string;
 }
 
-export interface ICarEqipment {
+export interface ICarEquipment {
   equipment: { type: string; text: string; icon: boolean }[];
   highlight: { type: string; text: string; icon: boolean }[];
 }
@@ -31,5 +31,5 @@ export interface ICar {
   brand: string;
   image: string;
   attributes: ICarAttribute[];
-  equipment: ICarEqipment;
+  equipment: ICarEquipment;
 }

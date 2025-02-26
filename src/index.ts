@@ -6,11 +6,11 @@ dotenv.config();
 
 const port = process.env.PORT || 3000;
 
-// const updateCars = async () => {
-//   await saveCarsToDB();
-// };
+const updateCars = async () => {
+  await saveCarsToDB();
+};
 
-// updateCars();
+updateCars();
 
 
 app.listen(port, () => {
