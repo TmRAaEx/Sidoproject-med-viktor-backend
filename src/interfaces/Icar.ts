@@ -11,6 +11,11 @@ export interface ICarAttribute {
   value: string;
 }
 
+export interface ICarEqipment {
+  equipment: { type: string; text: string; icon: boolean }[];
+  highlight: { type: string; text: string; icon: boolean }[];
+}
+
 export interface ICar {
   id: number;
   sku: string;
@@ -26,8 +31,5 @@ export interface ICar {
   brand: string;
   image: string;
   attributes: ICarAttribute[];
-  equipment: {
-    highlights: { text: string; icon: boolean }[];
-    equipment: { text: string; icon: boolean }[];
-  }; // Define the structure for equipment
+  equipment: ICarEqipment;
 }

@@ -115,8 +115,6 @@ const convertData = async (data: any[]): Promise<ICar[]> => {
     )
   );
 };
-
-// This function now returns an object with highlights and equipment properties
 async function getEquipment(carUrls: string[]): Promise<any[]> {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -124,7 +122,11 @@ async function getEquipment(carUrls: string[]): Promise<any[]> {
   const equipmentResults: any[] = [];
 
   for (const [index, carUrl] of carUrls.entries()) {
-    console.log(`[server]: fetching equipment data for ${carUrl}: ${index +1} of ${carUrls.length} `);
+    console.log(
+      `[server]: fetching equipment data for ${carUrl}: ${index + 1} of ${
+        carUrls.length
+      } `
+    );
     await page.goto("https://store.lecab.se/" + carUrl, {
       waitUntil: "networkidle2",
     });
@@ -145,15 +147,23 @@ async function getEquipment(carUrls: string[]): Promise<any[]> {
       const items = Array.from(document.querySelectorAll("ul li"));
       return items
         .map((item: any) => {
-          const text: string = item.textContent.trim();
           const icon = item.querySelector("svg") ? true : false;
 
-          if (!text) {
-            return undefined; // Return undefined if no text found
+          // Extract text for 'type' and 'text'
+          const type = item.querySelector("p")
+            ? item.querySelector("p").textContent.trim()
+            : item.textContent.trim();
+          const text = item.querySelector("p")
+            ? item.querySelector("p").nextElementSibling?.textContent.trim()
+            : null;
+
+          if (!type || !text) {
+            return undefined; // Skip if no type or text found
           }
-          return { text, icon };
+
+          return { type, text, icon }; // Return structured object with type, text, and icon
         })
-        .filter((item) => item !== undefined); // Filter out undefined values
+        .filter((item) => item !== undefined); // Filter out undefined items
     });
 
     // Filter out unwanted items from dynamic data
@@ -174,14 +184,20 @@ async function getEquipment(carUrls: string[]): Promise<any[]> {
       const listItems = document.querySelectorAll("ul.flex li");
       return Array.from(listItems)
         .map((item: any) => {
-          const text: string = item.querySelector("div")?.textContent?.trim();
+          // Extract text for 'type' and 'text'
+          const type = item.querySelector("div")?.textContent.trim();
+          const text = item
+            .querySelector("div")
+            ?.nextElementSibling?.textContent.trim();
           const icon = item.querySelector("svg") ? true : false;
-          if (!text) {
-            return undefined; // Return undefined if no text found
+
+          if (!type || !text) {
+            return undefined; // Skip if no type or text found
           }
-          return { text, icon };
+
+          return { type, text, icon }; // Return structured object with type, text, and icon
         })
-        .filter((item) => item !== undefined); // Filter out undefined values
+        .filter((item) => item !== undefined); // Filter out undefined items
     });
 
     // Now returning an object with 'equipment' and 'highlights'

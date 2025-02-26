@@ -21,7 +21,22 @@ const carSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     brand: { type: String, default: null },
     image: { type: String, required: true },
-    equipment: { highlights: { type: Array }, equipment: { type: Array } },
+    equipment: {
+      highlights: [
+        {
+          type: { type: String },
+          text: { type: String },
+          icon: { type: Boolean },
+        },
+      ],
+      equipment: [
+        {
+          type: { type: String },
+          text: { type: String },
+          icon: { type: Boolean },
+        },
+      ],
+    },
     attributes: [
       {
         id: { type: Number, default: null },
