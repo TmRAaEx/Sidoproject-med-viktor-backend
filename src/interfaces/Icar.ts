@@ -26,4 +26,8 @@ export interface ICar {
   brand: string;
   image: string;
   attributes: ICarAttribute[];
+  equipment: {
+    highlights: { text: string; icon: boolean }[];
+    equipment: { text: string; icon: boolean }[];
+  }; // Define the structure for equipment
 }

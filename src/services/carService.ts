@@ -23,32 +23,50 @@ export const getCarsBySearch = async (searchTerm: string): Promise<ICar[]> => {
 };
 
 export const saveCarsToDB = async () => {
-  // 1️⃣ Fetch cars from Lecab
-  const convertedCars = await fetchAndConvertLecabData();
-  const lecabCarSKUs = new Set(convertedCars.map((car) => car.sku)); // Store SKUs in a Set for quick lookup
+  try {
+    // 1️⃣ Fetch cars from Lecab
+    const convertedCars = await fetchAndConvertLecabData();
+    const lecabCarSKUs = new Set(convertedCars.map((car) => car.sku)); // Store SKUs in a Set for quick lookup
 
-  // 2️⃣ Fetch all cars currently in the database
-  const existingCars = await Car.find();
+    // 2️⃣ Fetch all cars currently in the database
+    const existingCars = await Car.find();
 
-  for (const car of convertedCars) {
-    const existingCar = await Car.findOne({ sku: car.sku });
+    const updatePromises: any[] = [];
+    const insertPromises: any[] = [];
+    const deletePromises: any[] = [];
 
-    if (existingCar) {
-      // 3️⃣ Update the car if it exists
-      await Car.updateOne({ sku: car.sku }, { $set: car });
-      console.log(`[Database]: Car updated - SKU: ${car.sku}`);
-    } else {
-      // 4️⃣ Insert new car if it doesn't exist
-      await Car.create(car);
-      console.log(`[Database]: Car created - SKU: ${car.sku}`);
+    // 3️⃣ Process each car to determine if it needs to be inserted or updated
+    for (const car of convertedCars) {
+      const existingCar = existingCars.find((dbCar) => dbCar.sku === car.sku);
+
+      if (existingCar) {
+        // 4️⃣ Update the car if it exists
+        updatePromises.push(Car.updateOne({ sku: car.sku }, { $set: car }));
+        console.log(`[Database]: Car updated - SKU: ${car.sku}`);
+      } else {
+        // 5️⃣ Insert new car if it doesn't exist
+        insertPromises.push(Car.create(car));
+        console.log(`[Database]: Car created - SKU: ${car.sku}`);
+      }
     }
-  }
 
-  // 5️⃣ Identify and delete cars that no longer exist on Lecab
-  for (const dbCar of existingCars) {
-    if (!lecabCarSKUs.has(dbCar.sku)) {
-      await Car.deleteOne({ sku: dbCar.sku });
-      console.log(`[Database]: Car removed - SKU: ${dbCar.sku}`);
+    // 6️⃣ Perform batch updates and inserts
+    await Promise.all(updatePromises);
+    await Promise.all(insertPromises);
+
+    // 7️⃣ Identify and delete cars that no longer exist on Lecab
+    for (const dbCar of existingCars) {
+      if (!lecabCarSKUs.has(dbCar.sku)) {
+        deletePromises.push(Car.deleteOne({ sku: dbCar.sku }));
+        console.log(`[Database]: Car removed - SKU: ${dbCar.sku}`);
+      }
     }
+
+    // 8️⃣ Perform batch delete
+    await Promise.all(deletePromises);
+
+    console.log("[Database]: Sync complete");
+  } catch (error) {
+    console.error("[Database]: Error during syncing process", error);
   }
 };
