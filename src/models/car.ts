@@ -8,7 +8,7 @@ const carSchema = new mongoose.Schema(
     id: { type: Number, required: true, unique: true },
     sku: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    price: { type: Number, required: true },
+    price: { type: String, required: true },
     regularPrice: { type: Number, default: null },
     campaign: { type: Boolean, default: null },
     monthlyCost: { type: Number, default: null },
@@ -21,6 +21,22 @@ const carSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     brand: { type: String, default: null },
     image: { type: String, required: true },
+    equipment: {
+      highlights: [
+        {
+          type: { type: String },
+          text: { type: String },
+          icon: { type: Boolean },
+        },
+      ],
+      equipment: [
+        {
+          type: { type: String },
+          text: { type: String },
+          icon: { type: Boolean },
+        },
+      ],
+    },
     attributes: [
       {
         id: { type: Number, default: null },
